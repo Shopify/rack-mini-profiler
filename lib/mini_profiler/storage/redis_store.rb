@@ -11,7 +11,7 @@ module Rack
       def initialize(args = nil)
         @args               = args || {}
         @prefix             = @args.delete(:prefix) || 'MPRedisStore'
-        @redis_connection   = @args.delete(:connection)
+        @redis_connection   = patch_redis(@args.delete(:connection))
         @expires_in_seconds = @args.delete(:expires_in) || EXPIRES_IN_SECONDS
       end
 
@@ -33,7 +33,7 @@ module Rack
 
       def set_unviewed(user, id)
         key = user_key(user)
-        if redis.exists(prefixed_id(id))
+        if redis.exists?(prefixed_id(id))
           expire_at = Process.clock_gettime(Process::CLOCK_MONOTONIC).to_i + redis.ttl(prefixed_id(id))
           redis.zadd(key, expire_at, id)
         end
@@ -44,7 +44,7 @@ module Rack
         key = user_key(user)
         redis.del(key)
         ids.each do |id|
-          if redis.exists(prefixed_id(id))
+          if redis.exists?(prefixed_id(id))
             expire_at = Process.clock_gettime(Process::CLOCK_MONOTONIC).to_i + redis.ttl(prefixed_id(id))
             redis.zadd(key, expire_at, id)
           end
@@ -121,10 +121,16 @@ unviewed_ids: #{get_unviewed_ids(user)}
       def redis
         @redis_connection ||= begin
           require 'redis' unless defined? Redis
-          Redis.new(@args)
+          patch_redis(Redis.new(@args))
         end
       end
 
+      def patch_redis(redis)
+        if redis && redis.respond_to?(:exists) && !redis.respond_to?(:exists?)
+          redis.singleton_class.send(:alias_method, :exists?, :exists)
+        end
+        redis
+      end
     end
   end
 end
