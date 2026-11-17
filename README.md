@@ -1,3 +1,5 @@
+> **This repository is no longer maintained.** It has been archived by Shopify and receives no updates or security fixes.
+
 # rack-mini-profiler
 
 [![Code Climate](https://codeclimate.com/github/MiniProfiler/rack-mini-profiler/badges/gpa.svg)](https://codeclimate.com/github/MiniProfiler/rack-mini-profiler) [![Build Status](https://travis-ci.org/MiniProfiler/rack-mini-profiler.svg)](https://travis-ci.org/MiniProfiler/rack-mini-profiler)
